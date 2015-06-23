@@ -6,9 +6,15 @@ from pyramid.view import view_config
 from waitress import serve
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Datetime, Text
+from sqlalchemy import Column, Integer, String, DateTime, Unicode, UnicodeText
+import datetime
 
 Base = declarative_base()
+
+DATABASE_URL = os.environ.get(
+    'DATABASE_URL',
+    'postgresql://sakiukaji@localhost:5432/learning-journal'
+)
 
 
 class Entry(Base):
@@ -16,7 +22,7 @@ class Entry(Base):
     id = sa.Column(Integer, primary_key=True, autoincrement=True)
     title = sa.Column(sa.Unicode(100), nullable=False)
     text = sa.Column(sa.UnicodeText, nullable=False)
-    date = sa.Column(Datetime, nullable=False, default=datetime.datetime.utcnow)
+    date = sa.Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 
 
 @view_config(route_name='home', renderer='string')
@@ -39,6 +45,9 @@ def main():
     app = config.make_wsgi_app()
     return app
 
+def init_db():
+    engine = sa.create_engine(DATABASE_URL)
+    Base.metadata.create_all(engine)
 
 
 
