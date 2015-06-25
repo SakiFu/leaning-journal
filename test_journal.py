@@ -4,6 +4,10 @@ import os
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
+from pyramid import testing
+from cryptacular.bcrypt import BCRYPTPasswordManager
+
+
 
 TEST_DATABASE_URL = os.environ.get(
     'DATABASE_URL',
@@ -18,22 +22,22 @@ import journal
 @pytest.fixture(scope='session')
 def connection(request):
     engine = create_engine(TEST_DATABASE_URL)
-    journal.Base.metadata.create_all(engine)
-    connection = engine.connect()
-    journal.DBSession.registry.clear()
-    journal.DBSession.configure(bind=connection)
+    journal.Base.metadata.create_all(engine) #create database
+    connection = engine.connect() #create connection and keep it open
+    journal.DBSession.registry.clear() # clear database
+    journal.DBSession.configure(bind=connection) #bind the connection to database
     journal.Base.metadata.bind = engine
-    request.addfinalizer(journal.Base.metadata.drop_all)
+    request.addfinalizer(journal.Base.metadata.drop_all) #drop the database
     return connection
 
 @pytest.fixture()
 def db_session(request, connection):
     from transaction import abort
-    trans = connection.begin()
+    trans = connection.begin() #create new transaction
     request.addfinalizer(trans.rollback)
     request.addfinalizer(abort)
 
-    from journal import DBSession
+    from journal import DBSession #DBsession's' name scope is only in the function above
     return DBSession
 
 
@@ -55,6 +59,23 @@ def entry(db_session):
     return entry
 
 
+@pytest.fixture(scope='function')
+def auth_req(request):
+    manager = BCRYPTPasswordManager()
+    settings = {
+        'auth.username': 'admin',
+        'auth.password': manager.encode('secret'),
+    }
+    testing.setUp(settings=settings)
+    req = testing.DummyRequest()
+
+    def cleanup():
+        testing.tearDown()
+
+    request.addfinalizer(cleanup)
+
+    return req
+
 
 def test_write_entry(db_session):
     kwargs = {'title': "Test Title", 'text': "Test entry text"}
@@ -73,6 +94,7 @@ def test_write_entry(db_session):
     # flush the session to "write" the data to the database
     db_session.flush()
     # now, we should have one entry:
+    # commit is perment
     assert db_session.query(journal.Entry).count() == 1
     for field in kwargs:
         if field != 'session':
@@ -124,9 +146,92 @@ def test_read_entries_one(db_session):
     for entry in entries:
         assert isinstance(entry, journal.Entry)
 
+
 def test_empty_listing(app):
     response = app.get('/')
     assert response.status_code == 200
     actual = response.body
     expected = 'No entries here so far'
     assert expected in actual
+
+
+def test_post_to_add_view(app):
+    entry_data = {
+        'title': 'Hello there',
+        'text': 'This is a post',
+    }
+    response = app.post('/add', params=entry_data, status='3*')
+    redirected = response.follow()
+    actual = redirected.body
+    for expected in entry_data.values():
+        assert expected in actual
+
+
+def test_do_login_success(auth_req):
+    from journal import do_login
+    auth_req.params = {'username': 'admin', 'password': 'secret'}
+    assert do_login(auth_req)
+
+
+def test_do_login_bad_pass(auth_req):
+    from journal import do_login
+    auth_req.params = {'username': 'admin', 'password': 'wrong'}
+    assert not do_login(auth_req)
+
+
+def test_do_login_bad_user(auth_req):
+    from journal import do_login
+    auth_req.params = {'username': 'bad', 'password': 'secret'}
+    assert not do_login(auth_req)
+
+
+def test_do_login_missing_params(auth_req):
+    from journal import do_login
+    for params in ({'username': 'admin'}, {'password': 'secret'}):
+        auth_req.params = params
+        with pytest.raises(ValueError):
+            do_login(auth_req)
+
+INPUT_BTN = '<input type="submit" value="Share" name="Share"/>'
+
+
+def login_helper(username, password, app):
+    """encapsulate app login for reuse in tests
+    Accept all statuscodes so that we can make assertions in tests
+    """
+    login_data = {'username': username, 'password': password}
+    return app.post('/login', params=login_data, status='*')
+
+
+def test_start_as_anonymous(app):
+    response = app.get('/', status=200)
+    actual = response.body
+    assert INPUT_BTN not in actual
+
+
+def test_login_success(app):
+    username, password = ('admin', 'secret')
+    redirect = login_helper(username, password, app)
+    assert redirect.status_code == 302
+    response = redirect.follow()
+    assert response.status_code == 200
+    actual = response.body
+    assert INPUT_BTN in actual
+
+
+def test_login_fails(app):
+    username, password = ('admin', 'wrong')
+    response = login_helper(username, password, app)
+    assert response.status_code == 200
+    actual = response.body
+    assert "Login Failed" in actual
+    assert INPUT_BTN not in actual
+
+def test_logout(app):
+    # re-use existing code to ensure we are logged in when we begin
+    test_login_success(app)
+    redirect = app.get('/logout', status="3*")
+    response = redirect.follow()
+    assert response.status_code == 200
+    actual = response.body
+    assert INPUT_BTN not in actual
