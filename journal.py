@@ -8,6 +8,11 @@ import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, UnicodeText
 import datetime
+from pyramid.httpexceptions import HTTPNotFound
+from sqlalchemy.orm import scoped_session, sessionmaker
+from zope.sqlalchemy import ZopeTransactionExtension
+
+DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 Base = declarative_base()
 
@@ -24,11 +29,25 @@ class Entry(Base):
     text = sa.Column(sa.UnicodeText, nullable=False)
     date = sa.Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 
+    @classmethod
+    def write(cls, title=None, text=None, session=None):
+        if session is None:
+            session = DBSession
+        instance = cls(title=title, text=text)
+        session.add(instance)
+        return instance
 
-@view_config(route_name='home', renderer='string')
-def home(request):
-    return "Hello World"
+    @classmethod
+    def all(cls, session=None):
+        if session is None:
+            session = DBSession
+        return session.query(cls).order_by(cls.date.desc()).all()
 
+
+@view_config(route_name='home', renderer='templates/list.jinja2')
+def list_view(request):
+    entries = Entry.all()
+    return {'entries':entries}
 
 def main():
     """Create a configured wsgi app"""
@@ -36,11 +55,18 @@ def main():
     debug = os.environ.get('DEBUG', True)
     settings['reload_all'] = debug
     settings['debug_all'] = debug
+    if not os.environ.get('TESTING', False):
+        # only bind the session if we are not testing
+        engine = sa.create_engine(DATABASE_URL)
+        DBSession.configure(bind=engine)
     # configuration setup
     config = Configurator(
         settings=settings
     )
+    config.include('pyramid_jinja2')
+    config.include('pyramid_tm')
     config.add_route('home', '/')
+    config.add_route('other', '/other/{special_val')
     config.scan()
     app = config.make_wsgi_app()
     return app
@@ -49,7 +75,21 @@ def init_db():
     engine = sa.create_engine(DATABASE_URL)
     Base.metadata.create_all(engine)
 
+def test_empty_listing(app):
+    response = app.get('/')
+    assert response.status_code == 200
+    actual = response.body
+    expected = 'No entries here so far'
+    assert expected in actual
 
+
+def test_listing(app, entry):
+    response = app.get('/')
+    assert response.status_code == 200
+    actual = response.body
+    for field in ['title', 'text']:
+        expected = getattr(entry, field, 'absent')
+        assert expected in actual
 
 if __name__ == '__main__':
     app = main()
