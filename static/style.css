@@ -1,73 +1,96 @@
 body{
-    color:#111;
-    padding:0;
     font-family: Helvetica;
-    margin:0}
+    color:#DFDCDE;
+    background-image:url('honeycomb_bw_2.jpg');
+}}
+
+
 
 header{
-    margin:0;
-    padding:0 0.75em;
-    width:100%;}
+     margin:10px;
+     background-color:#C8B1B9;
+     height : 200px;
+     }
 
-header:after{
-    content:"";
-    display:table;
-    clear:both;}
 
-header a{
-    text-decoration:none}
+#title-1{
+    margin:8px;
+     max-width : 1200px;
+     height : 50px;
+     }
 
-header aside{
-    float:right;
-    text-align:right;
-    padding-right:0.75em}
+#title-2{margin:10px;
+    padding: 5px;
+     background-color:#862372;
+     max-width : 100% ;
+     height : 50px;
+     }
 
-header ul{
-    list-style:none;
-    list-style-type:none;
-    display:inline-block}
-
-header ul li{
-    margin:0 0.25em 0 0}
-
-header ul li a{
-    padding:0;
-    display:inline-block}
-
-main{padding:0 0.75em 1em}
-
-main:after{
-    content:"";
-    display:table;
-    clear:both}
-
-main article{
-    margin-bottom:1em;
-    padding-left:0.5em}
-
-main article h3{margin-top:0}
-
-main article .entry_body{
-    margin:0.5em}
-
-main aside{float:right}
-
-main aside .field{
-    margin-bottom:1em}
-
-main aside .field input,
-main aside .field label,
-main aside .field textarea{
-    vertical-align:top}
-
-main aside .field label{
+#user-controls {
     display:inline-block;
-    width:15%;
-    padding-top:2px}
+    position:absolute;
+    top:10px;
+    right:10px;">
+    }
 
-main aside .field input,
-main aside .field textarea{
-    width:83%}
+nav {
+    display:inline-block;
+    position:fixed;
+    top:40px;
+    right:10px;">
+    }
 
-main aside .control_row input{
-    margin-left:16%}
+#button{margin:15px;}
+
+a:link{
+    text-decoration:none;
+    color:#DD68D3;
+    }
+
+
+a:hover{
+    text-decoration:none;
+    color:#DD68D3;
+    }
+
+#sidebar{
+    float:left;
+    margin:40px;
+    display:inline-block;
+    vertical-align:top;
+    line-height:150%;
+    width:200px;
+    height:600px;
+    }
+
+
+.btn {
+  color: blue;
+  width: 200px;
+  background-color: #A483A1;
+  color: #DFDCDE;
+  display: block;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  margin: 10px auto;
+  padding: 5px 0;
+}
+
+#contents{float:right;
+    padding:10px;
+    width:750px;}
+
+.img{float:left;}
+
+li {
+    
+    list-style-type:none;
+}
+
+footer {
+    text-align: center;
+    margin: 10px;
+    clear: both;
+    }

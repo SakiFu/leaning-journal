@@ -9,6 +9,7 @@ from cryptacular.bcrypt import BCRYPTPasswordManager
 
 
 
+
 TEST_DATABASE_URL = os.environ.get(
     'DATABASE_URL',
     'postgresql://sakiukaji:@localhost:5432/test-learning-journal'
@@ -156,6 +157,7 @@ def test_empty_listing(app):
 
 
 def test_post_to_add_view(app):
+    username, password = ('admin', 'secret')
     entry_data = {
         'title': 'Hello there',
         'text': 'This is a post',
@@ -215,6 +217,7 @@ def test_login_success(app):
     assert redirect.status_code == 302
     response = redirect.follow()
     assert response.status_code == 200
+    response = app.get('/create', status = 200)
     actual = response.body
     assert INPUT_BTN in actual
 

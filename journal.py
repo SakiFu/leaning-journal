@@ -52,8 +52,25 @@ class Entry(Base):
         return session.query(cls).order_by(cls.date.desc()).all()
 
 
-@view_config(route_name='home', renderer='templates/list.jinja2')
-def list_view(request):
+@view_config(route_name='home', renderer='templates/index.jinja2')
+def _view(request):
+    entries = Entry.all()
+    return {'entries':entries}
+
+
+@view_config(route_name='detail', renderer='templates/detail.jinja2')
+def detail_view(request):
+    entries = Entry.all()
+    return {'entries':entries}
+
+
+@view_config(route_name='edit', renderer='templates/edit.jinja2')
+def edit_view(request):
+    entries = Entry.all()
+    return {'entries':entries}
+
+@view_config(route_name='create', renderer='templates/create.jinja2')
+def edit_view(request):
     entries = Entry.all()
     return {'entries':entries}
 
@@ -63,7 +80,7 @@ def add_entry(request):
     title = request.params.get('title')
     text = request.params.get('text')
     Entry.write(title=title, text=text)
-    return HTTPFound(request.route_url('home'))
+    return HTTPFound(request.route_url('create'))
 
 
 @view_config(context=DBAPIError)
@@ -128,7 +145,10 @@ def main():
     config.include('pyramid_jinja2')
     config.include('pyramid_tm')
     config.add_route('home', '/')
+    config.add_route('detail', '/detail')
     config.add_route('add', '/add')
+    config.add_route('create', '/create')
+    config.add_route('edit', '/edit')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.add_route('other', '/other/{special_val')
