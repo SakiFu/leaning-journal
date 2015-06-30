@@ -2,6 +2,8 @@
 {% block body %}
 {% if request.authenticated_userid %} 
 {% endif %}
+
+<a class="btn" href="{{ request.route_url('create') }}">New Entry</a>
 <h2>Index</h2>
   {% for entry in entries %}
   <article class="entry" id="entry={{entry.id}}">

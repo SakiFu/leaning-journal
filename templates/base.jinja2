@@ -14,7 +14,7 @@
   <body>
     <header>
       <div id='title-1'>
-            <img src="static/nmr_2.png" class="img" width='100px' height='70px'>
+            <a href ="{{ request.route_url('home') }}"><img src="static/nmr_2.png" class="img" width='100px' height='70px'></a>
             <h1>Saki's Learning Journal</h1>
             <aside id="user-controls">
         <ul>
@@ -32,10 +32,6 @@
     </header>
 
     <div id='sidebar'>
-        <a class="btn" href="{{ request.route_url('home') }}">Home</a>
-        <a class="btn" href="{{ request.route_url('detail') }}">Detail</a>
-        <a class="btn" href="{{ request.route_url('create') }}">Create</a>
-        <a class="btn" href="">Edit</a>
 
     </div>
     <main>
