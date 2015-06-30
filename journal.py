@@ -61,16 +61,16 @@ def _view(request):
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
 def detail_view(request):
     entries = Entry.all()
-    return {'entries':entries}
+    return {'entries': entries}
 
 
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
 def edit_view(request):
     entries = Entry.all()
-    return {'entries':entries}
+    return {'entries': entries}
 
 @view_config(route_name='create', renderer='templates/create.jinja2')
-def edit_view(request):
+def create_view(request):
     entries = Entry.all()
     return {'entries':entries}
 
@@ -81,19 +81,6 @@ def add_entry(request):
     text = request.params.get('text')
     Entry.write(title=title, text=text)
     return HTTPFound(request.route_url('create'))
-
-"""@view_config(route_name='add', request_method='...jinja2')
-def add_entry(request):
-    get values
-    entry = Entry(title,text)
-    if entry.validate:
-    writeEntry
-    if request_method = 'POST':
-        #redirect to home
-    else:
-        entry = Entry()
-    return entry = {'entry':entry}"""
-
 
 
 @view_config(context=DBAPIError)
@@ -119,7 +106,7 @@ def login(request):
 
         if authenticated:
             headers = remember(request, username)
-            return HTTPFound(request.route_url('home'), headers=headers) #put cookie in the user's browser
+            return HTTPFound(request.route_url('home'), headers=headers)
 
     return {'error': error, 'username': username}
 
@@ -145,9 +132,8 @@ def main():
         # only bind the session if we are not testing
         engine = sa.create_engine(DATABASE_URL)
         DBSession.configure(bind=engine)
-        #add a secret value for tkt signing
     auth_secret = os.environ.get('JOURNAL_AUTH_SECRET', 'itsaseekrit')
-    # configuration setup. add a new value to the constructor for our configurator
+    # configuration setup
     config = Configurator(
         settings=settings,
         authentication_policy=AuthTktAuthenticationPolicy(
@@ -156,7 +142,6 @@ def main():
         ),
         authorization_policy=ACLAuthorizationPolicy(),
     )
-    #use the transaction management provided by pyramid tm
     config.include('pyramid_jinja2')
     config.include('pyramid_tm')
     config.add_route('home', '/')
@@ -166,7 +151,6 @@ def main():
     config.add_route('edit', '/edit')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
-    config.add_route('other', '/other/{special_val')
     config.add_static_view('static', os.path.join(HERE, 'static'))
     config.scan()
     app = config.make_wsgi_app()

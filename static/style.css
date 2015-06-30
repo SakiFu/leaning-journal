@@ -93,6 +93,7 @@ li {
 }
 
 footer {
+    position:absolute;
     text-align: center;
     margin: 10px;
     clear: both;
