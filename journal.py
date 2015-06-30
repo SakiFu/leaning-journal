@@ -70,7 +70,7 @@ def edit_view(request):
     return {'entries':entries}
 
 @view_config(route_name='create', renderer='templates/create.jinja2')
-def edit_view(request):
+def create_view(request):
     entries = Entry.all()
     return {'entries':entries}
 

@@ -53,7 +53,7 @@ a:hover{
     color:#DD68D3;
     }
 
-#sidebar{
+/*#sidebar{
     float:left;
     margin:40px;
     display:inline-block;
@@ -62,7 +62,7 @@ a:hover{
     width:200px;
     height:600px;
     }
-
+*/
 
 .btn {
   color: blue;
@@ -79,8 +79,11 @@ a:hover{
 }
 
 #contents{float:right;
+    margin:80px;
     padding:10px;
     width:750px;}
+
+main {margin:20px 150px;}
 
 .img{float:left;}
 
@@ -90,6 +93,7 @@ li {
 }
 
 footer {
+    position:absolute;
     text-align: center;
     margin: 10px;
     clear: both;
