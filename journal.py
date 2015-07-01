@@ -51,6 +51,12 @@ class Entry(Base):
             session = DBSession
         return session.query(cls).order_by(cls.date.desc()).all()
 
+    @classmethod
+    def search(cls, id, session=None):
+        if session is None:
+            session = DBSession
+        return session.query(cls).filter_by(id=id).one()
+
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
 def _view(request):
@@ -70,7 +76,7 @@ def edit_view(request):
     return {'entries':entries}
 
 @view_config(route_name='create', renderer='templates/create.jinja2')
-def create_view(request):
+def add_view(request):
     entries = Entry.all()
     return {'entries':entries}
 

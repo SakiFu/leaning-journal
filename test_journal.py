@@ -10,6 +10,7 @@ from cryptacular.bcrypt import BCRYPTPasswordManager
 
 
 
+
 TEST_DATABASE_URL = os.environ.get(
     'DATABASE_URL',
     'postgresql://sakiukaji:@localhost:5432/test-learning-journal'
@@ -48,6 +49,7 @@ def app():
     from webtest import TestApp
     app = main()
     return TestApp(app)
+
 
 @pytest.fixture()
 def entry(db_session):
@@ -126,6 +128,20 @@ def test_entry_no_extra_fails(db_session):
     db_session.flush()
 
 
+def test_write_entry_no_title(db_session):
+    bad_data = {'text': 'only text'}
+    journal.Entry.write(session=db_session, **bad_data)
+    with pytest.raises(IntegrityError):
+        db_session.flush()
+
+
+def test_entry_no_text(db_session):
+    bad_data = {'title': 'only title'}
+    journal.Entry.write(session=db_session, **bad_data)
+    with pytest.raises(IntegrityError):
+        db_session.flush()
+
+
 def test_read_entries_empty(db_session):
     entries = journal.Entry.all()
     assert len(entries) == 0
@@ -150,6 +166,14 @@ def test_read_entries_one(db_session):
 
 def test_empty_listing(app):
     response = app.get('/')
+    assert response.status_code == 200
+    actual = response.body
+    expected = 'No entries here so far'
+    assert expected in actual
+
+
+def test_empty_listing_detail(app):
+    response = app.get('/detail')
     assert response.status_code == 200
     actual = response.body
     expected = 'No entries here so far'
