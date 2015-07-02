@@ -69,12 +69,22 @@ class Entry(Base):
             session = DBSession
         return session.query(cls).filter_by(id=id).one()
 
-    @classmethod
-    def get_entry(cls, id, session=None):
-        """get single entry"""
-        if session is None:
-            session = DBSession
-        return session.query(cls).get(id)
+    # @classmethod
+    # def get_entry(cls, id, session=None):
+    #     """get single entry"""
+    #     if session is None:
+    #         session = DBSession
+    #     return session.query(cls).get(id)
+
+    # @classmethod
+    # def update(cls, id, title=None, text=None, session=None):
+    #     if session is None:
+    #         session = DBSession
+    #     entry = session.query(cls).filter_by(id=id).one()
+    #     entry.title = title
+    #     entry.text = text
+    #     return entry
+
 
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
@@ -83,24 +93,14 @@ def index_view(request):
     return {'entries':entries}
 
 
-# @view_config(route_name='detail', renderer='templates/detail.jinja2')
-# def detail_view(request):
-#     entries = Entry.all()
-#     return {'entries':entries}
-
-def detail_view(request):
-    return Response(request.matchdict['id'])
-
-
-
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
 def detail_view(request):
-
-    id = request.matchdict['id']
-    data = Entry.get_entry(id)
-
-    return {'data': data}
-
+    post_id = request.matchdict.get('id', None)
+    try:
+        entry = Entry.search(post_id)
+    except NoResultFound:
+        return HTTPNotFound('No post found.')
+    return {'entry': entry}
 
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
 def edit_view(request):
