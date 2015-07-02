@@ -1,7 +1,5 @@
 {% extends "base.jinja2" %}
 {% block body %}
-{% if request.authenticated_userid %} 
-{% endif %}
 <h2>Entries</h2>
   {% for entry in entries %}
   <article class="entry" id="entry={{entry.id}}">
@@ -13,7 +11,7 @@
   </article>
   {% else %}
   <div class="entry">
-    <p><em>No entries here so far</em></p>
+    <p>No entries here so far</p>
   </div>
   {% endfor %}
 {% endblock %}

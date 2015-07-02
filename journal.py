@@ -3,20 +3,30 @@ from __future__ import unicode_literals
 import os
 from pyramid.config import Configurator
 from pyramid.view import view_config
+from pyramid.response import Response
+# from markdown import markdown
+import datetime
 from waitress import serve
+
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Unicode, UnicodeText
-import datetime
-from pyramid.httpexceptions import HTTPNotFound
+
 from sqlalchemy.orm import scoped_session, sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
 from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
+
+from pyramid.httpexceptions import HTTPNotFound
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import remember, forget
+
+# from pygments import highlight
+# from pygments.lexers.python import PythonLexer
+# from pygments.formatters.html import HtmlFormatter
+
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -28,6 +38,8 @@ DATABASE_URL = os.environ.get(
     'DATABASE_URL',
     'postgresql://sakiukaji@localhost:5432/learning-journal'
 )
+
+
 
 
 class Entry(Base):
@@ -57,17 +69,37 @@ class Entry(Base):
             session = DBSession
         return session.query(cls).filter_by(id=id).one()
 
+    @classmethod
+    def get_entry(cls, id, session=None):
+        """get single entry"""
+        if session is None:
+            session = DBSession
+        return session.query(cls).get(id)
+
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
-def _view(request):
+def index_view(request):
     entries = Entry.all()
     return {'entries':entries}
+
+
+# @view_config(route_name='detail', renderer='templates/detail.jinja2')
+# def detail_view(request):
+#     entries = Entry.all()
+#     return {'entries':entries}
+
+def detail_view(request):
+    return Response(request.matchdict['id'])
+
 
 
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
 def detail_view(request):
-    entries = Entry.all()
-    return {'entries':entries}
+
+    id = request.matchdict['id']
+    data = Entry.get_entry(id)
+
+    return {'data': data}
 
 
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
@@ -151,7 +183,7 @@ def main():
     config.include('pyramid_jinja2')
     config.include('pyramid_tm')
     config.add_route('home', '/')
-    config.add_route('detail', '/detail')
+    config.add_route('detail', '/detail/{id}')
     config.add_route('add', '/add')
     config.add_route('create', '/create')
     config.add_route('edit', '/edit')
