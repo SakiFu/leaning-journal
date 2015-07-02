@@ -2,12 +2,9 @@
 {% block body %}
 <article class="journal-entry">
     <h2 class="title">{{ entry.title }}</h2>
-    <p>
-        {{ entry.text | safe }}
-    </p>
+    <p>{{ entry.text | safe }}</p>
     <span class="date">{{ entry.date.strftime('%b. %d, %Y') }}</span>
-
-    <div class="form-buttons">
+    <div class="edit-buttons">
         {% if request.authenticated_userid %}
         <a href ="{{request.route_url('edit', id=entry.id)}}">
         <button type="button">edit</button>
