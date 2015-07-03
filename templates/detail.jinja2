@@ -2,7 +2,7 @@
 {% block body %}
 <article class="detail">
     <h2 class="title">{{ entry.title }}</h2>
-    <p>{{ entry.text | safe }}</p>
+    <p>{{ add_markdown(entry.text) | safe }}</p>
     <span class="date">{{ entry.date.strftime('%b. %d, %Y') }}</span>
     <div class="edit-button">
         {% if request.authenticated_userid %}

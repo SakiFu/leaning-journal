@@ -4,7 +4,7 @@ import os
 from pyramid.config import Configurator
 from pyramid.view import view_config
 from pyramid.response import Response
-from markdown import markdown
+import markdown
 import datetime
 from waitress import serve
 
@@ -24,9 +24,9 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import remember, forget
 
-# from pygments import highlight
-# from pygments.lexers.python import PythonLexer
-# from pygments.formatters.html import HtmlFormatter
+from pygments import highlight
+from pygments.lexers.python import PythonLexer
+from pygments.formatters.html import HtmlFormatter
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -39,6 +39,10 @@ DATABASE_URL = os.environ.get(
     'DATABASE_URL',
     'postgresql://sakiukaji@localhost:5432/learning-journal'
 )
+
+
+def add_markdown(text):
+    return markdown.markdown(text, extensions=['codehilite', 'fenced_code'])
 
 
 class Entry(Base):
@@ -78,21 +82,22 @@ class Entry(Base):
         return entry
 
 
+
 @view_config(route_name='home', renderer='templates/index.jinja2')
 def index_view(request):
     entries = Entry.all()
-    return {'entries':entries}
+    return {'entries':entries, 'add_markdown' : add_markdown}
 
 
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
 def detail_view(request):
     post_id = request.matchdict.get('id', None)
     try:
-        entry = Entry.search(post_id)
-        html_text = markdown(entry.text, output_format='html5')
+            entry = Entry.search(post_id)
+        # html_text = markdown(entry.text, output_format='html5')
     except NoResultFound:
         return HTTPNotFound('No post found.')
-    return {'entry': entry}
+    return {'entry': entry, 'add_markdown': add_markdown}
 
 
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
