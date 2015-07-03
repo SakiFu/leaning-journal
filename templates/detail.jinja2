@@ -1,10 +1,10 @@
 {% extends "base.jinja2" %}
 {% block body %}
-<article class="journal-entry">
+<article class="detail">
     <h2 class="title">{{ entry.title }}</h2>
     <p>{{ entry.text | safe }}</p>
     <span class="date">{{ entry.date.strftime('%b. %d, %Y') }}</span>
-    <div class="edit-buttons">
+    <div class="edit-button">
         {% if request.authenticated_userid %}
         <a href ="{{request.route_url('edit', id=entry.id)}}">
         <button type="button">edit</button>

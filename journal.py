@@ -4,7 +4,7 @@ import os
 from pyramid.config import Configurator
 from pyramid.view import view_config
 from pyramid.response import Response
-# from markdown import markdown
+from markdown import markdown
 import datetime
 from waitress import serve
 
@@ -16,6 +16,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
 from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
+from sqlalchemy.orm.exc import NoResultFound
 
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.authentication import AuthTktAuthenticationPolicy
@@ -38,8 +39,6 @@ DATABASE_URL = os.environ.get(
     'DATABASE_URL',
     'postgresql://sakiukaji@localhost:5432/learning-journal'
 )
-
-
 
 
 class Entry(Base):
@@ -69,22 +68,14 @@ class Entry(Base):
             session = DBSession
         return session.query(cls).filter_by(id=id).one()
 
-    # @classmethod
-    # def get_entry(cls, id, session=None):
-    #     """get single entry"""
-    #     if session is None:
-    #         session = DBSession
-    #     return session.query(cls).get(id)
-
-    # @classmethod
-    # def update(cls, id, title=None, text=None, session=None):
-    #     if session is None:
-    #         session = DBSession
-    #     entry = session.query(cls).filter_by(id=id).one()
-    #     entry.title = title
-    #     entry.text = text
-    #     return entry
-
+    @classmethod
+    def update(cls, id, title=None, text=None, session=None):
+        if session is None:
+            session = DBSession
+        entry = session.query(cls).filter_by(id=id).one()
+        entry.title = title
+        entry.text = text
+        return entry
 
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
@@ -98,14 +89,30 @@ def detail_view(request):
     post_id = request.matchdict.get('id', None)
     try:
         entry = Entry.search(post_id)
+        html_text = markdown(entry.text, output_format='html5')
     except NoResultFound:
         return HTTPNotFound('No post found.')
     return {'entry': entry}
 
+
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
-def edit_view(request):
-    entry = Entry.all()
-    return {'entry':entry}
+def edit_entry(request):
+    if request.authenticated_userid:
+        post_id = request.matchdict.get('id', None)
+        try:
+            entry = Entry.search(post_id)
+        except NoResultFound:
+            return HTTPNotFound('No post found.')
+        if request.method == 'POST':
+            id = request.matchdict['id']
+            title = request.params.get('title')
+            text = request.params.get('text')
+            Entry.update(id=id, title=title, text=text)
+            return HTTPFound(request.route_url('home'))
+        else:
+            return {'entry': entry}
+    else:
+        return HTTPForbidden()
 
 @view_config(route_name='create', renderer='templates/create.jinja2')
 def add_view(request):
@@ -186,7 +193,7 @@ def main():
     config.add_route('detail', '/detail/{id}')
     config.add_route('add', '/add')
     config.add_route('create', '/create')
-    config.add_route('edit', '/edit')
+    config.add_route('edit', '/edit/{id}')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.add_static_view('static', os.path.join(HERE, 'static'))
