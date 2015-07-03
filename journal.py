@@ -104,8 +104,8 @@ def detail_view(request):
 
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
 def edit_view(request):
-    entries = Entry.all()
-    return {'entries':entries}
+    entry = Entry.all()
+    return {'entry':entry}
 
 @view_config(route_name='create', renderer='templates/create.jinja2')
 def add_view(request):
