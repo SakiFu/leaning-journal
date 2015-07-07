@@ -4,6 +4,7 @@ import os
 from pyramid.config import Configurator
 from pyramid.view import view_config
 from pyramid.response import Response
+
 import markdown
 import datetime
 from waitress import serve
@@ -18,7 +19,7 @@ from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm.exc import NoResultFound
 
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPForbidden
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from cryptacular.bcrypt import BCRYPTPasswordManager
@@ -82,11 +83,10 @@ class Entry(Base):
         return entry
 
 
-
 @view_config(route_name='home', renderer='templates/index.jinja2')
 def index_view(request):
     entries = Entry.all()
-    return {'entries':entries, 'add_markdown' : add_markdown}
+    return {'entries': entries, 'add_markdown': add_markdown}
 
 
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
@@ -119,10 +119,11 @@ def edit_entry(request):
     else:
         return HTTPForbidden()
 
+
 @view_config(route_name='create', renderer='templates/create.jinja2')
 def add_view(request):
     entries = Entry.all()
-    return {'entries':entries}
+    return {'entries': entries}
 
 
 @view_config(route_name='add', request_method='POST')
@@ -224,7 +225,6 @@ def do_login(request):
     if username == settings.get('auth.username', ''):
         hashed = settings.get('auth.password', '')
         return manager.check(hashed, password)
-
 
 
 if __name__ == '__main__':

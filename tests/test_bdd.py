@@ -56,7 +56,7 @@ def check_entry_list(homepage):
 
 
 # Detail Feature
-@scenario('detail.feature',
+@scenario('features/detail.feature',
           'Display a detailed entry linked from index page')
 def test_detail_listing_as_anon():
     pass
@@ -86,7 +86,7 @@ def check_detail_entry(app):
 
 
 # Edit Feature
-@scenario('edit.feature',
+@scenario('features/edit.feature',
           'Edit Entry')
 def test_edit_listing_auth():
     pass
@@ -113,8 +113,8 @@ def edit_entry(authenticated_user):
 
 
 # Markdown Feature
-@scenario('markdown.feature',
-          'Enter text with markdown syntax)
+@scenario('features/markdown.feature',
+          'Enter text with markdown syntax')
 def test_markdown_entry():
     pass
 
@@ -135,7 +135,7 @@ def enter_markdown(authenticated_user):
     def func(str):
         return str
     ```
-   """
+    """
     text = markdown.markdown(text, extensions=['codehilite',
                                                'fenced_code'])
     authenticated_user.post('/add', params={'title': title, 'text': text})
@@ -148,7 +148,7 @@ def check_markdown_in_entry(app):
 
 
 # Colorized Feature
-@scenario('codehilite.feature',
+@scenario('features/codehilite.feature',
           'Colorize code block')
 def test_colorized_entry():
     pass
