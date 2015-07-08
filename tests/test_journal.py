@@ -8,47 +8,44 @@ from pyramid import testing
 from cryptacular.bcrypt import BCRYPTPasswordManager
 
 
-
-
-
-TEST_DATABASE_URL = os.environ.get(
-    'DATABASE_URL',
-    'postgresql://sakiukaji:@localhost:5432/test-learning-journal'
-)
-os.environ['DATABASE_URL'] = TEST_DATABASE_URL
-os.environ['TESTING'] = "True"
+# TEST_DATABASE_URL = os.environ.get(
+#     'DATABASE_URL',
+#     'postgresql://sakiukaji:@localhost:5432/test-learning-journal'
+# )
+# os.environ['DATABASE_URL'] = TEST_DATABASE_URL
+# os.environ['TESTING'] = "True"
 
 import journal
 
 
-@pytest.fixture(scope='session')
-def connection(request):
-    engine = create_engine(TEST_DATABASE_URL)
-    journal.Base.metadata.create_all(engine) #create database
-    connection = engine.connect() #create connection and keep it open
-    journal.DBSession.registry.clear() # clear database
-    journal.DBSession.configure(bind=connection) #bind the connection to database
-    journal.Base.metadata.bind = engine
-    request.addfinalizer(journal.Base.metadata.drop_all) #drop the database
-    return connection
+# @pytest.fixture(scope='session')
+# def connection(request):
+#     engine = create_engine(TEST_DATABASE_URL)
+#     journal.Base.metadata.create_all(engine) #create database
+#     connection = engine.connect() #create connection and keep it open
+#     journal.DBSession.registry.clear() # clear database
+#     journal.DBSession.configure(bind=connection) #bind the connection to database
+#     journal.Base.metadata.bind = engine
+#     request.addfinalizer(journal.Base.metadata.drop_all) #drop the database
+#     return connection
 
-@pytest.fixture()
-def db_session(request, connection):
-    from transaction import abort
-    trans = connection.begin() #create new transaction
-    request.addfinalizer(trans.rollback)
-    request.addfinalizer(abort)
+# @pytest.fixture()
+# def db_session(request, connection):
+#     from transaction import abort
+#     trans = connection.begin() #create new transaction
+#     request.addfinalizer(trans.rollback)
+#     request.addfinalizer(abort)
 
-    from journal import DBSession #DBsession's' name scope is only in the function above
-    return DBSession
+#     from journal import DBSession #DBsession's' name scope is only in the function above
+#     return DBSession
 
 
-@pytest.fixture()
-def app():
-    from journal import main
-    from webtest import TestApp
-    app = main()
-    return TestApp(app)
+# @pytest.fixture()
+# def app():
+#     from journal import main
+#     from webtest import TestApp
+#     app = main()
+#     return TestApp(app)
 
 
 @pytest.fixture()

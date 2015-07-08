@@ -27,8 +27,24 @@ def connection(request):
 
 
 @pytest.fixture()
+def db_session(request, connection):
+    from transaction import abort
+    trans = connection.begin() #create new transaction
+    request.addfinalizer(trans.rollback)
+    request.addfinalizer(abort)
+
+    from journal import DBSession #DBsession's' name scope is only in the function above
+    return DBSession
+
+
+@pytest.fixture()
 def app(db_session):
     from journal import main
     from webtest import TestApp
     app = main()
     return TestApp(app)
+
+@pytest.fixture()
+def homepage(app):
+    return app.get('/')
+

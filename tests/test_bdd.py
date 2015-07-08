@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from pytest_bdd import scenario, given, when, then
-import pytest
+# import pytest
 import markdown
 
 import journal
 
 
-@pytest.fixture(scope='module')
-def db_session(request, connection):
-    from transaction import abort
-    trans = connection.begin()
-    request.addfinalizer(trans.rollback)
-    request.addfinalizer(abort)
+# @pytest.fixture(scope='module')
+# def db_session(request, connection):
+#     from transaction import abort
+#     trans = connection.begin()
+#     request.addfinalizer(trans.rollback)
+#     request.addfinalizer(abort)
 
-    from journal import DBSession
-    return DBSession
+#     from journal import DBSession
+#     return DBSession
 
 
 # Homepage Feature
 @scenario('features/homepage.feature',
-          'Display list of entries in index page')
+          'Homepage lists of entries')
 def test_home_listing_as_anon():
     pass
 
@@ -32,6 +32,7 @@ def an_anonymous_user(app):
 
 @given('I have three entries')
 def create_entries(db_session):
+    import pdb; pdb.set_trace()
     title_template = "Title {}"
     text_template = "Entry Text {}"
     for x in range(3):
@@ -62,12 +63,11 @@ def test_detail_listing_as_anon():
     pass
 
 
-@given('I am an anonymous user')
 @given('I have a journal entry')
 def create_one_entry(db_session):
     journal.Entry.write(
-        title='A Title',
-        text='Some text',
+        title='Title',
+        text='text',
         session=db_session
     )
     db_session.flush()
@@ -87,7 +87,7 @@ def check_detail_entry(app):
 
 # Edit Feature
 @scenario('features/edit.feature',
-          'Edit Entry')
+          'Display edit form with existing text in it')
 def test_edit_listing_auth():
     pass
 
@@ -148,7 +148,7 @@ def check_markdown_in_entry(app):
 
 
 # Colorized Feature
-@scenario('features/codehilite.feature',
+@scenario('features/colorize.feature',
           'Colorize code block')
 def test_colorized_entry():
     pass

@@ -1,7 +1,7 @@
 Feature: Colorize
     Colorize code block
 
-    Scenario: Entry with code block
-        Given An entry with code bclock
+    Scenario: Colorize code block
+        Given I have an entry with code block
         When I go to the detail page 
         Then I see colorized code
