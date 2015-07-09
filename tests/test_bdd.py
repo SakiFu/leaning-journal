@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from pytest_bdd import scenario, given, when, then
-# import pytest
+import pytest
 import markdown
 
 import journal
@@ -32,7 +32,6 @@ def an_anonymous_user(app):
 
 @given('I have three entries')
 def create_entries(db_session):
-    import pdb; pdb.set_trace()
     title_template = "Title {}"
     text_template = "Entry Text {}"
     for x in range(3):
@@ -59,7 +58,7 @@ def check_entry_list(homepage):
 # Detail Feature
 @scenario('features/detail.feature',
           'Display a detailed entry linked from index page')
-def test_detail_listing_as_anon():
+def test_detail_listing():
     pass
 
 
@@ -119,32 +118,68 @@ def test_markdown_entry():
     pass
 
 
-@given('I am an authenticated user')
-def markdown_authenticated_user(app):
-    login_data = {'username': 'admin', 'password': 'secret'}
-    app.post('/login', params=login_data, status='*')
-    return app
-
-
-@when('I enter text with markdown syntax')
-def enter_markdown(authenticated_user):
-    title = 'Markdown Test Title'
-    text = """Header 1.
-    Code block:
-    ```Python
-    def func(str):
+@given('I have an entry with markdown syntax')
+def create_markdown(db_session):
+    journal.Entry.write(
+        title='Title',
+        text=markdown.markdown("""Header 1.
+        Code block:
+        ```Python
+        def func(str):
         return str
-    ```
-    """
-    text = markdown.markdown(text, extensions=['codehilite',
-                                               'fenced_code'])
-    authenticated_user.post('/add', params={'title': title, 'text': text})
+        ```
+        """, extensions=['codehilite', 'fenced_code']),
+        session=db_session
+    )
+    db_session.flush()
+
+
+@when('I go to the datail page')
+def visit_markdown(app):
+    pass
 
 
 @then('I see the entry in h1 format')
 def check_markdown_in_entry(app):
+    import pdb;pdb.set_trace()
     response = app.get('/detail/6')
     assert '<h1>Header 1' in response.html
+
+
+# # Markdown Feature
+# @scenario('features/markdown.feature',
+#           'Enter text with markdown syntax')
+# def test_markdown_entry():
+#     pass
+
+
+# @given('I am an authenticated user')
+# def markdown_authenticated_user(app):
+#     import pdb; pdb.set_trace()
+#     login_data = {'username': 'admin', 'password': 'secret'}
+#     app.post('/login', params=login_data, status='*')
+#     return app
+
+
+# @when('I enter text with markdown syntax')
+# def enter_markdown(markdown_authenticated_user):
+#     title = 'Markdown Test Title'
+#     text = """Header 1.
+#     Code block:
+#     ```Python
+#     def func(str):
+#         return str
+#     ```
+#     """
+#     text = markdown.markdown(text, extensions=['codehilite',
+#                                                'fenced_code'])
+#     markdown_authenticated_user.post('/add', params={'title': title, 'text': text})
+
+
+# @then('I see the entry in h1 format')
+# def check_markdown_in_entry(app):
+#     response = app.get('/detail/6')
+#     assert '<h1>Header 1' in response.html
 
 
 # Colorized Feature

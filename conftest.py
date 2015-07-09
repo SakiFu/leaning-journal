@@ -47,4 +47,3 @@ def app(db_session):
 @pytest.fixture()
 def homepage(app):
     return app.get('/')
-
