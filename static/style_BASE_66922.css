@@ -53,8 +53,7 @@ a:hover{
     color:#DD68D3;
     }
 
-<<<<<<< HEAD
-/*#sidebar{
+#sidebar{
     float:left;
     margin:40px;
     display:inline-block;
@@ -63,9 +62,7 @@ a:hover{
     width:200px;
     height:600px;
     }
-*/
-=======
->>>>>>> editing
+
 
 .btn {
   color: blue;
@@ -82,11 +79,8 @@ a:hover{
 }
 
 #contents{float:right;
-    margin:80px;
     padding:10px;
     width:750px;}
-
-main {margin:20px 150px;}
 
 .img{float:left;}
 
@@ -96,15 +90,7 @@ li {
 }
 
 footer {
-<<<<<<< HEAD
-    position:absolute;
     text-align: center;
     margin: 10px;
     clear: both;
-=======
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        height: 40px;
->>>>>>> editing
     }

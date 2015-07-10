@@ -7,47 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from pyramid import testing
 from cryptacular.bcrypt import BCRYPTPasswordManager
 
-
-
-
-TEST_DATABASE_URL = os.environ.get(
-    'DATABASE_URL',
-    'postgresql://sakiukaji:@localhost:5432/test-learning-journal'
-)
-os.environ['DATABASE_URL'] = TEST_DATABASE_URL
-os.environ['TESTING'] = "True"
-
 import journal
 
-
-@pytest.fixture(scope='session')
-def connection(request):
-    engine = create_engine(TEST_DATABASE_URL)
-    journal.Base.metadata.create_all(engine) #create database
-    connection = engine.connect() #create connection and keep it open
-    journal.DBSession.registry.clear() # clear database
-    journal.DBSession.configure(bind=connection) #bind the connection to database
-    journal.Base.metadata.bind = engine
-    request.addfinalizer(journal.Base.metadata.drop_all) #drop the database
-    return connection
-
-@pytest.fixture()
-def db_session(request, connection):
-    from transaction import abort
-    trans = connection.begin() #create new transaction
-    request.addfinalizer(trans.rollback)
-    request.addfinalizer(abort)
-
-    from journal import DBSession #DBsession's' name scope is only in the function above
-    return DBSession
-
-
-@pytest.fixture()
-def app():
-    from journal import main
-    from webtest import TestApp
-    app = main()
-    return TestApp(app)
 
 @pytest.fixture()
 def entry(db_session):
@@ -126,6 +87,20 @@ def test_entry_no_extra_fails(db_session):
     db_session.flush()
 
 
+def test_write_entry_no_title(db_session):
+    bad_data = {'text': 'only text'}
+    journal.Entry.write(session=db_session, **bad_data)
+    with pytest.raises(IntegrityError):
+        db_session.flush()
+
+
+def test_entry_no_text(db_session):
+    bad_data = {'title': 'only title'}
+    journal.Entry.write(session=db_session, **bad_data)
+    with pytest.raises(IntegrityError):
+        db_session.flush()
+
+
 def test_read_entries_empty(db_session):
     entries = journal.Entry.all()
     assert len(entries) == 0
@@ -156,8 +131,14 @@ def test_empty_listing(app):
     assert expected in actual
 
 
+def test_empty_listing_detail(app):
+    response = app.get('/detail/1', status=404)
+
+    assert response.status_code == 404
+
+
 def test_post_to_add_view(app):
-    username, password = ('admin', 'secret')
+    test_login_success(app)
     entry_data = {
         'title': 'Hello there',
         'text': 'This is a post',
@@ -165,8 +146,7 @@ def test_post_to_add_view(app):
     response = app.post('/add', params=entry_data, status='3*')
     redirected = response.follow()
     actual = redirected.body
-    for expected in entry_data.values():
-        assert expected in actual
+    assert 'Hello there' in actual
 
 
 def test_do_login_success(auth_req):
@@ -217,7 +197,7 @@ def test_login_success(app):
     assert redirect.status_code == 302
     response = redirect.follow()
     assert response.status_code == 200
-    response = app.get('/create', status = 200)
+    response = app.get('/create', status=200)
     actual = response.body
     assert INPUT_BTN in actual
 
@@ -229,6 +209,7 @@ def test_login_fails(app):
     actual = response.body
     assert "Login Failed" in actual
     assert INPUT_BTN not in actual
+
 
 def test_logout(app):
     # re-use existing code to ensure we are logged in when we begin

@@ -2,7 +2,6 @@
 {% block body %}
 {% if request.authenticated_userid %}
 <h2>Create New Journal</h2>
-<aside>
 <form action="{{ request.route_url('add') }}" method="POST" class="add_entry">
   <div class="field">
     <label for="title">Title</label>
@@ -16,6 +15,5 @@
     <input type="submit" value="Share" name="Share"/>
   </div>
 </form>
-</aside>
 {% endif %}
 {% endblock %}
