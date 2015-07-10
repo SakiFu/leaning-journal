@@ -89,24 +89,8 @@ def index_view(request):
     return {'entries': entries, 'add_markdown': add_markdown}
 
 
-@view_config(route_name='detail', xhr=True, renderer='json')
-@view_config(route_name='detail', xhr=False, renderer='templates/detail.jinja2')
+@view_config(route_name='detail', renderer='templates/detail.jinja2')
 def detail_view(request):
-<<<<<<< Updated upstream
-=======
-    entries = Entry.all()
-    return {'entries': entries}
-
-
-@view_config(route_name='edit', renderer='templates/edit.jinja2')
-def edit_view(request):
-    entries = Entry.all()
-    return {'entries': entries}
-
-
-@view_config(route_name='create', renderer='templates/create.jinja2')
-def create_view(request):
->>>>>>> Stashed changes
     post_id = request.matchdict.get('id', None)
     try:
             entry = Entry.search(post_id)
@@ -115,7 +99,6 @@ def create_view(request):
     return {'entry': entry, 'add_markdown': add_markdown}
 
 
-@view_config(route_name='edit', xhr=True, renderer='json')
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
 def edit_entry(request):
     if request.authenticated_userid:
@@ -142,7 +125,6 @@ def add_view(request):
     return {'entries': entries}
 
 
-@view_config(route_name='add', request_method='POST', xhr=True, renderer='json')
 @view_config(route_name='add', renderer='templates/create.jinja2')
 def add_entry(request):
     if request.authenticated_userid:
