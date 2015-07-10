@@ -125,13 +125,6 @@ def add_view(request):
     return {'entries': entries}
 
 
-# @view_config(route_name='add', request_method='POST')
-# def add_entry(request):
-#     title = request.params.get('title')
-#     text = request.params.get('text')
-#     Entry.write(title=title, text=text)
-#     return HTTPFound(request.route_url('create'))
-
 @view_config(route_name='add', renderer='templates/create.jinja2')
 def add_entry(request):
     if request.authenticated_userid:
