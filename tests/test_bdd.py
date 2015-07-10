@@ -7,17 +7,6 @@ import markdown
 import journal
 
 
-# @pytest.fixture(scope='module')
-# def db_session(request, connection):
-#     from transaction import abort
-#     trans = connection.begin()
-#     request.addfinalizer(trans.rollback)
-#     request.addfinalizer(abort)
-
-#     from journal import DBSession
-#     return DBSession
-
-
 # Homepage Feature
 @scenario('features/homepage.feature',
           'Homepage lists of entries')
