@@ -100,15 +100,6 @@ def edit_view(request):
     entries = Entry.all()
     return {'entries': entries}
 
-@view_config(route_name='create', renderer='templates/create.jinja2')
-def create_view(request):
-    post_id = request.matchdict.get('id', None)
-    try:
-            entry = Entry.search(post_id)
-    except NoResultFound:
-        return HTTPNotFound('No post found.')
-    return {'entry': entry, 'add_markdown': add_markdown}
-
 
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
 def edit_entry(request):
