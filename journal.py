@@ -91,17 +91,6 @@ def index_view(request):
 
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
 def detail_view(request):
-    entries = Entry.all()
-    return {'entries': entries}
-
-
-@view_config(route_name='edit', renderer='templates/edit.jinja2')
-def edit_view(request):
-    entries = Entry.all()
-    return {'entries': entries}
-
-@view_config(route_name='create', renderer='templates/create.jinja2')
-def create_view(request):
     post_id = request.matchdict.get('id', None)
     try:
             entry = Entry.search(post_id)

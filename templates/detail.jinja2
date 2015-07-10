@@ -1,16 +1,5 @@
 {% extends "base.jinja2" %}
 {% block body %}
-<<<<<<< HEAD
-{% if request.authenticated_userid %} 
-{% endif %}
-<h2>Entries</h2>
-  {% for entry in entries %}
-  <article class="entry" id="entry={{entry.id}}">
-    <h3>{{ entry.title }}</h3>
-    <p class="dateline">{{ entry.date.strftime('%b. %d, %Y') }}
-    <div class="entry_body">
-      {{ entry.text|safe }}
-=======
 <article class="detail">
     <h2 class="title">{{ entry.title }}</h2>
     <p>{{ add_markdown(entry.text) | safe }}</p>
@@ -21,8 +10,6 @@
         <button type="button">edit</button>
       </a>
         {% endif %}
->>>>>>> editing
     </div>
 </article>
 {% endblock %}
-
