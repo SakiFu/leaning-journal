@@ -2,6 +2,6 @@ Feature: Colorize
     Colorize code block
 
     Scenario: Colorize code block
-        Given I have an entry with code block
-        When I go to the detail page 
+        Given I am an authenticated user
+        When I enter text with codehiliter
         Then I see colorized code

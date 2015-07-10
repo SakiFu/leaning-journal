@@ -118,21 +118,6 @@ def test_markdown_entry():
     pass
 
 
-# @given('I am an authenticated user')
-# def create_markdown(db_session):
-#     journal.Entry.write(
-#         title='Title',
-#         text=markdown.markdown("""Header 1.
-#         Code block:
-#         ```Python
-#         def func(str):
-#         return str
-#         ```
-#         """, extensions=['codehilite', 'fenced_code']),
-#         session=db_session
-#     )
-#     db_session.flush()
-
 @when('I enter text with markdown syntax')
 def create_an_entry_with_markdown(authenticated_user):
     title = 'Markdown Test Title'
@@ -151,29 +136,32 @@ def create_an_entry_with_markdown(authenticated_user):
 @then('I see the entry in h1 format')
 def confirm_markdown_in_entry(app):
     response = app.get('/detail/5')
-    assert '<h1>This is a header 1', '<pre>' in response.html
+    assert '<h1>This is a header 1</h1>', '<pre>' in response.html
 
 
-# Colorized Feature
+# Colorize Feature
 @scenario('features/colorize.feature',
           'Colorize code block')
 def test_colorized_entry():
     pass
 
 
-@given('I have an entry with code block')
-def entry_code_block(app):
-    import pdb; pdb.set_trace()
-    return app.get('/detail/5')
-
-
-@when('I go to the detail page')
-def view_post():
-    pass
+@when('I enter text with codehiliter')
+def enter_code_block(authenticated_user):
+    title = 'Colorize Test Title'
+    text = """#This is a header 1.
+    This is a code block:
+    ```python
+    def x():
+    return 'foo'
+    ```
+    """
+    text = markdown.markdown(text, extensions=['codehilite',
+                                               'fenced_code'])
+    authenticated_user.post('/add', params={'title': title, 'text': text})
 
 
 @then('I see colorized code')
-def check_colorized(entry_code_block):
-
-    body = entry_code_block.body
-    assert '<span class="k">' in body
+def check_colorized(app):
+    response = app.get('/detail/6')
+    assert '<span class="k">', '<pre>' in response.html

@@ -184,7 +184,6 @@ def test_post_to_add_view(app):
     response = app.post('/add', params=entry_data, status='3*')
     redirected = response.follow()
     actual = redirected.body
-    import pdb;pdb.set_trace()
     assert 'Hello there' in actual
 
 
