@@ -94,7 +94,6 @@ def detail_view(request):
     post_id = request.matchdict.get('id', None)
     try:
             entry = Entry.search(post_id)
-        # html_text = markdown(entry.text, output_format='html5')
     except NoResultFound:
         return HTTPNotFound('No post found.')
     return {'entry': entry, 'add_markdown': add_markdown}
@@ -126,12 +125,25 @@ def add_view(request):
     return {'entries': entries}
 
 
-@view_config(route_name='add', request_method='POST')
+# @view_config(route_name='add', request_method='POST')
+# def add_entry(request):
+#     title = request.params.get('title')
+#     text = request.params.get('text')
+#     Entry.write(title=title, text=text)
+#     return HTTPFound(request.route_url('create'))
+
+@view_config(route_name='add', renderer='templates/create.jinja2')
 def add_entry(request):
-    title = request.params.get('title')
-    text = request.params.get('text')
-    Entry.write(title=title, text=text)
-    return HTTPFound(request.route_url('create'))
+    if request.authenticated_userid:
+        if request.method == 'POST':
+            title = request.params.get('title')
+            text = request.params.get('text')
+            Entry.write(title=title, text=text)
+            return HTTPFound(request.route_url('home'))
+        else:
+            return {}
+    else:
+        return HTTPForbidden()
 
 
 @view_config(context=DBAPIError)

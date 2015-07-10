@@ -176,8 +176,7 @@ def test_empty_listing_detail(app):
 
 
 def test_post_to_add_view(app):
-    import pdb;pdb.set_trace()
-    username, password = ('admin', 'secret')
+    test_login_success(app)
     entry_data = {
         'title': 'Hello there',
         'text': 'This is a post',
@@ -185,8 +184,8 @@ def test_post_to_add_view(app):
     response = app.post('/add', params=entry_data, status='3*')
     redirected = response.follow()
     actual = redirected.body
-    for expected in entry_data.values():
-        assert expected in actual
+    import pdb;pdb.set_trace()
+    assert 'Hello there' in actual
 
 
 def test_do_login_success(auth_req):
@@ -237,7 +236,7 @@ def test_login_success(app):
     assert redirect.status_code == 302
     response = redirect.follow()
     assert response.status_code == 200
-    response = app.get('/create', status = 200)
+    response = app.get('/create', status=200)
     actual = response.body
     assert INPUT_BTN in actual
 
