@@ -25,10 +25,6 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import remember, forget
 
-from pygments import highlight
-from pygments.lexers.python import PythonLexer
-from pygments.formatters.html import HtmlFormatter
-
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
