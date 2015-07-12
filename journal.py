@@ -69,29 +69,25 @@ class Entry(Base):
             session = DBSession
         return session.query(cls).filter_by(id=id).one()
 
-    @classmethod
-    def update(cls, id, title=None, text=None, session=None):
-        if session is None:
-            session = DBSession
-        entry = session.query(cls).filter_by(id=id).one()
-        entry.title = title
-        entry.text = text
-        return entry
+    # @classmethod
+    # def update(cls, id, title=None, text=None, session=None):
+    #     if session is None:
+    #         session = DBSession
+    #     entry = session.query(cls).filter_by(id=id).one()
+    #     entry.title = title
+    #     entry.text = text
+    #     return entry
 
     @property
     def markdown(self):
         return markdown.markdown(self.text, extensions=['codehilite',
                                  'fenced_code'])
 
-    @property
-    def created(self):
-        return self.created.strftime('%b. %d, %Y')
-
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
 def index_view(request):
     entries = Entry.all()
-    return {'entries': entries, 'add_markdown': add_markdown}
+    return {'entries': entries}
 
 
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
@@ -101,7 +97,7 @@ def detail_view(request):
             entry = Entry.search(post_id)
     except NoResultFound:
         return HTTPNotFound('No post found.')
-    return {'entry': entry, 'add_markdown': add_markdown}
+    return {'entry': entry}
 
 
 @view_config(route_name='edit', xhr=True, renderer='json')
@@ -119,7 +115,7 @@ def edit_entry(request):
             if 'HTTP_X_REQUESTED_WITH' not in request.environ:
                 return HTTPFound(request.route_url('detail', id=post_id))
             else:
-                entry_dict = {'title': entry.title, 'markdown': entry.mkdown}
+                entry_dict = {'title': entry.title}
                 return entry_dict
         else:
             return {'entry': entry}
@@ -131,6 +127,7 @@ def edit_entry(request):
 def add_view(request):
     entries = Entry.all()
     return {'entries': entries}
+
 
 @view_config(route_name='add', xhr=True, renderer='json')
 @view_config(route_name='add', renderer='templates/create.jinja2')
