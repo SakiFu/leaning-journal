@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
-import json
 from pyramid.config import Configurator
 from pyramid.view import view_config
 from pyramid.response import Response
@@ -25,10 +24,6 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import remember, forget
-
-from pygments import highlight
-from pygments.lexers.python import PythonLexer
-from pygments.formatters.html import HtmlFormatter
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -83,6 +78,15 @@ class Entry(Base):
         entry.text = text
         return entry
 
+    @property
+    def markdown(self):
+        return markdown.markdown(self.text, extensions=['codehilite',
+                                 'fenced_code'])
+
+    @property
+    def created(self):
+        return self.created.strftime('%b. %d, %Y')
+
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
 def index_view(request):
@@ -90,33 +94,33 @@ def index_view(request):
     return {'entries': entries, 'add_markdown': add_markdown}
 
 
-@view_config(route_name='detail', xhr=False, renderer='templates/detail.jinja2')
+@view_config(route_name='detail', renderer='templates/detail.jinja2')
 def detail_view(request):
     post_id = request.matchdict.get('id', None)
     try:
-        entry = Entry.search(post_id)
+            entry = Entry.search(post_id)
     except NoResultFound:
-        return HTTPNotFound('There is no post with this id.')
-    return {'entry': entry}
+        return HTTPNotFound('No post found.')
+    return {'entry': entry, 'add_markdown': add_markdown}
 
 
 @view_config(route_name='edit', xhr=True, renderer='json')
-@view_config(route_name='edit', xhr=False, renderer='templates/edit.jinja2')
+@view_config(route_name='edit', renderer='templates/edit.jinja2')
 def edit_entry(request):
     if request.authenticated_userid:
         post_id = request.matchdict.get('id', None)
         try:
             entry = Entry.search(post_id)
         except NoResultFound:
-            return HTTPNotFound('No post found.')
+            return HTTPNotFound('There is no post with this id.')
         if request.method == 'POST':
             entry.title = request.params.get('title')
             entry.text = request.params.get('text')
             if 'HTTP_X_REQUESTED_WITH' not in request.environ:
                 return HTTPFound(request.route_url('detail', id=post_id))
             else:
-                entrydict = {'title': entry.title, 'mkdown': entry.mkdown}
-                return entrydict
+                entry_dict = {'title': entry.title, 'markdown': entry.mkdown}
+                return entry_dict
         else:
             return {'entry': entry}
     else:
@@ -128,8 +132,7 @@ def add_view(request):
     entries = Entry.all()
     return {'entries': entries}
 
-
-@view_config(route_name='add', request_method='POST', xhr=True, renderer='json')
+@view_config(route_name='add', xhr=True, renderer='json')
 @view_config(route_name='add', renderer='templates/create.jinja2')
 def add_entry(request):
     if request.authenticated_userid:
