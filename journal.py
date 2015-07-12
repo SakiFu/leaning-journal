@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
+import json
 from pyramid.config import Configurator
 from pyramid.view import view_config
 from pyramid.response import Response
@@ -89,17 +90,18 @@ def index_view(request):
     return {'entries': entries, 'add_markdown': add_markdown}
 
 
-@view_config(route_name='detail', renderer='templates/detail.jinja2')
+@view_config(route_name='detail', xhr=False, renderer='templates/detail.jinja2')
 def detail_view(request):
     post_id = request.matchdict.get('id', None)
     try:
-            entry = Entry.search(post_id)
+        entry = Entry.search(post_id)
     except NoResultFound:
-        return HTTPNotFound('No post found.')
-    return {'entry': entry, 'add_markdown': add_markdown}
+        return HTTPNotFound('There is no post with this id.')
+    return {'entry': entry}
 
 
-@view_config(route_name='edit', renderer='templates/edit.jinja2')
+@view_config(route_name='edit', xhr=True, renderer='json')
+@view_config(route_name='edit', xhr=False, renderer='templates/edit.jinja2')
 def edit_entry(request):
     if request.authenticated_userid:
         post_id = request.matchdict.get('id', None)
@@ -108,11 +110,13 @@ def edit_entry(request):
         except NoResultFound:
             return HTTPNotFound('No post found.')
         if request.method == 'POST':
-            id = request.matchdict['id']
-            title = request.params.get('title')
-            text = request.params.get('text')
-            Entry.update(id=id, title=title, text=text)
-            return HTTPFound(request.route_url('home'))
+            entry.title = request.params.get('title')
+            entry.text = request.params.get('text')
+            if 'HTTP_X_REQUESTED_WITH' not in request.environ:
+                return HTTPFound(request.route_url('detail', id=post_id))
+            else:
+                entrydict = {'title': entry.title, 'mkdown': entry.mkdown}
+                return entrydict
         else:
             return {'entry': entry}
     else:
@@ -125,6 +129,7 @@ def add_view(request):
     return {'entries': entries}
 
 
+@view_config(route_name='add', request_method='POST', xhr=True, renderer='json')
 @view_config(route_name='add', renderer='templates/create.jinja2')
 def add_entry(request):
     if request.authenticated_userid:
