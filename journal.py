@@ -140,15 +140,11 @@ def add_entry(request):
         if request.method == 'POST':
             title = request.params.get('title')
             text = request.params.get('text')
-            new_entry = Entry.write(title=title, text=text)
+            entry = Entry.write(title=title, text=text)
+            entry = Entry.write(title=title, text=text)
             if 'HTTP_X_REQUESTED_WITH' not in request.environ:
                 return HTTPFound(request.route_url('home'))
             else:
-                entry = {'id': new_entry.id,
-                         'title': new_entry.title,
-                         'markdown': new_entry.markdown,
-                         'date': new_entry.date
-                         }
                 return entry
         else:
             return {}
