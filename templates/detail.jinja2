@@ -7,7 +7,7 @@
   {% endif %}
   <article class="entry" id="entry={{entry.id}}">
     <h3 class="title">{{ entry.title }}</h3>
-    <p class="dateline">{{ entry.created_ }}</p>
+    <p class="dateline">{{ entry.date }}</p>
     <div class="entry_body">
       {{ entry.markdown | safe }}
     </div>

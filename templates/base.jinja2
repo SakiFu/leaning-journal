@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name='discription' content="Leaning Journal at CodeFellows"> 
-    <title>Saki's Learning Journal</title>
+    <title>Learning Journal</title>
     <!--[if lt IE 9]>
     <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -13,12 +13,66 @@
     <link href="/static/pygments.css" rel="stylesheet" type="text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="/static/main.js"></script>
+    <script>
+        // $(document).ready(function(){
+            // $(".test").click(function(){
+              // $(".entry_ajax").prepend("fast");
+            // })
+            // });
+         $( document ).ready( function() {
+
+    $("#addButton").click( function( event ) {
+        event.preventDefault();
+        create();
+    });
+
+    function create() {
+      // debugger;
+        $.ajax({
+            url: "/add",
+            type: "POST",
+            dataType: "json",
+            data: { "title": $("#title").val(), "text": $("#text").val()},
+        })
+
+        .done(function(response) {
+            var $template = "<article class='entry' "+
+                              "id='entry="+response.id+"'>"+
+                              "<a href='/detail/"+response.id+"'>"+
+                              "<h3>"+response.title+"</h3></a>"+
+                              "<p class='dateline'>"+response.created_+"</p>" +
+                              '</article>';
+            $(".entry:first").before($template);
+            $("#createForm").hide();
+            $('#title').val('');
+            $('#text').val('');
+        })
+
+        .fail(function(response) {
+            alert("error");
+        })
+    };
+
+    $("#addLink").click( function( event ) {
+        event.preventDefault();
+        $("#createForm").show();
+    });
+
+    $(document).click(function(event) {
+        if(!$(event.target).closest('#createForm').length
+        && !$(event.target).is('#addLink')) {
+            $('#createForm').hide();
+        }
+    });
+
+  });
+    </script>
   </head>
   <body>
     <header>
       <div id='title-1'>
             <a href ="{{ request.route_url('home') }}"><img src="/static/nmr_2.png" class="img" width='100px' height='70px'></a>
-            <h1>Saki's Learning Journal</h1>
+            <h1>Sakis Learning Journal</h1>
             <aside id="user-controls">
         <ul>
         {% if not request.authenticated_userid %}

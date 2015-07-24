@@ -38,10 +38,6 @@ DATABASE_URL = os.environ.get(
 )
 
 
-# def add_markdown(text):
-#     return markdown.markdown(text, extensions=['codehilite', 'fenced_code'])
-
-
 class Entry(Base):
     __tablename__ = 'entries'
     id = sa.Column(Integer, primary_key=True, autoincrement=True)
@@ -55,6 +51,7 @@ class Entry(Base):
             session = DBSession
         instance = cls(title=title, text=text)
         session.add(instance)
+        session.flush()
         return instance
 
     @classmethod
@@ -69,23 +66,14 @@ class Entry(Base):
             session = DBSession
         return session.query(cls).filter_by(id=id).one()
 
-    # @classmethod
-    # def update(cls, id, title=None, text=None, session=None):
-    #     if session is None:
-    #         session = DBSession
-    #     entry = session.query(cls).filter_by(id=id).one()
-    #     entry.title = title
-    #     entry.text = text
-    #     return entry
-
     @property
     def markdown(self):
         return markdown.markdown(self.text, extensions=['codehilite',
                                  'fenced_code'])
 
     @property
-    def created(self):
-        return self.created.strftime('%b. %d, %Y')
+    def created_(self):
+        return self.date.strftime('%b. %d, %Y')
 
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
@@ -140,11 +128,15 @@ def add_entry(request):
         if request.method == 'POST':
             title = request.params.get('title')
             text = request.params.get('text')
-            entry = Entry.write(title=title, text=text)
-            entry = Entry.write(title=title, text=text)
+            new_entry = Entry.write(title=title, text=text)
             if 'HTTP_X_REQUESTED_WITH' not in request.environ:
                 return HTTPFound(request.route_url('home'))
             else:
+                entry = {'id': new_entry.id,
+                         'title': new_entry.title,
+                         'markdown': new_entry.markdown,
+                         'created_': new_entry.created_
+                         }
                 return entry
         else:
             return {}

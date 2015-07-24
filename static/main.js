@@ -1,8 +1,8 @@
-$(document).ready(function(){
-            $("#test").click(function(){
-              $('#test').addClass("red");
-            });
-            });
+// $(document).ready(function(){
+//             $("#test").click(function(){
+//               $('#test').fadeOut("fast");
+//             });
+//             });
 // $( document ).ready( function() {
 //     $("#addButton").click(function(event) {
 //         event.preventDefault();
@@ -32,6 +32,6 @@ $(document).ready(function(){
     //     .fail(function(response) {
     //         alert("error");
     //     })
-    };
+    // };
 
 
