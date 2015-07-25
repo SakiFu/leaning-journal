@@ -14,11 +14,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="/static/main.js"></script>
     <script>
-        // $(document).ready(function(){
-            // $(".test").click(function(){
-              // $(".entry_ajax").prepend("fast");
-            // })
-            // });
          $( document ).ready( function() {
 
     $("#addButton").click( function( event ) {
@@ -72,7 +67,7 @@
     <header>
       <div id='title-1'>
             <a href ="{{ request.route_url('home') }}"><img src="/static/nmr_2.png" class="img" width='100px' height='70px'></a>
-            <h1>Sakis Learning Journal</h1>
+            <h1>Learning Journal</h1>
             <aside id="user-controls">
         <ul>
         {% if not request.authenticated_userid %}

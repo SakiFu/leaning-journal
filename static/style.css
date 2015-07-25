@@ -88,6 +88,19 @@ footer {
         height: 40px;
     }
 
-.red {
-    color:red;
+.overlay {
+    width: 80%;
+    max-width: 900px;
+    max-height: 400px;
+    height: 80%;
+    position: absolute;
+    top: 40%;
+    left: 47%;
+    margin-left: -25%;
+    display: none;
+    text-align: center;
+}
+
+.overlay .add_entry {
+    margin-left: -9%;
 }
