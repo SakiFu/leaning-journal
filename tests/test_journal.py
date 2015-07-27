@@ -11,6 +11,16 @@ import journal
 
 
 @pytest.fixture()
+def db_session(request, connection):
+    from transaction import abort
+    trans = connection.begin()
+    request.addfinalizer(trans.rollback)
+    request.addfinalizer(abort)
+
+    from journal import DBSession
+    return DBSession
+
+@pytest.fixture()
 def entry(db_session):
     entry = journal.Entry.write(
         title='Test Title',
@@ -47,16 +57,7 @@ def test_write_entry(db_session):
     # now, create an entry using the 'write' class method
     entry = journal.Entry.write(**kwargs)
     assert isinstance(entry, journal.Entry)
-    # id and created are generated automatically, but only on writing to
-    # the database
-    auto_fields = ['id', 'date']
-    for field in auto_fields:
-        assert getattr(entry, field, None) is None
-
-    # flush the session to "write" the data to the database
-    db_session.flush()
     # now, we should have one entry:
-    # commit is perment
     assert db_session.query(journal.Entry).count() == 1
     for field in kwargs:
         if field != 'session':
@@ -66,39 +67,16 @@ def test_write_entry(db_session):
         assert getattr(entry, auto, None) is not None
 
 
-def test_entry_no_title_fails(db_session):
-    bad_data = {'text': 'test text'}
-    journal.Entry.write(session=db_session, **bad_data)
-    with pytest.raises(IntegrityError):
-        db_session.flush()
-
-
-def test_entry_no_text_fails(db_session):
-    bad_data = {'title': 'test title'}
-    journal.Entry.write(session=db_session, **bad_data)
-    with pytest.raises(IntegrityError):
-        db_session.flush()
-
-
-def test_entry_no_extra_fails(db_session):
-    bad_data = {'text': 'test text', 'title': 'test title', 'something': 'title something'}
-    with pytest.raises(TypeError):
-        journal.Entry.write(session=db_session, **bad_data)
-    db_session.flush()
-
-
 def test_write_entry_no_title(db_session):
-    bad_data = {'text': 'only text'}
-    journal.Entry.write(session=db_session, **bad_data)
+    bad_data = {'text': 'test text'}
     with pytest.raises(IntegrityError):
-        db_session.flush()
+        journal.Entry.write(session=db_session, **bad_data)
 
 
 def test_entry_no_text(db_session):
-    bad_data = {'title': 'only title'}
-    journal.Entry.write(session=db_session, **bad_data)
+    bad_data = {'title': 'test_title'}
     with pytest.raises(IntegrityError):
-        db_session.flush()
+        journal.Entry.write(session=db_session, **bad_data)
 
 
 def test_read_entries_empty(db_session):
