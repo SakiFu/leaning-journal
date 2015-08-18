@@ -111,11 +111,10 @@ def test_empty_listing(app):
 
 def test_empty_listing_detail(app):
     response = app.get('/detail/1', status=404)
-
     assert response.status_code == 404
 
-
 def test_post_to_add_view(app):
+    import pdb; pdb.set_trace() 
     test_login_success(app)
     entry_data = {
         'title': 'Hello there',
