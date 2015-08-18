@@ -83,8 +83,24 @@ li {
 }
 
 footer {
-        position: fixed;
         bottom: 0;
         width: 100%;
         height: 40px;
     }
+
+.overlay {
+    width: 80%;
+    max-width: 900px;
+    max-height: 400px;
+    height: 80%;
+    position: absolute;
+    top: 40%;
+    left: 47%;
+    margin-left: -25%;
+    display: none;
+    text-align: center;
+}
+
+.overlay .add_entry {
+    margin-left: -9%;
+}

@@ -25,10 +25,6 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import remember, forget
 
-from pygments import highlight
-from pygments.lexers.python import PythonLexer
-from pygments.formatters.html import HtmlFormatter
-
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -40,10 +36,6 @@ DATABASE_URL = os.environ.get(
     'DATABASE_URL',
     'postgresql://sakiukaji@localhost:5432/learning-journal'
 )
-
-
-def add_markdown(text):
-    return markdown.markdown(text, extensions=['codehilite', 'fenced_code'])
 
 
 class Entry(Base):
@@ -59,6 +51,7 @@ class Entry(Base):
             session = DBSession
         instance = cls(title=title, text=text)
         session.add(instance)
+        session.flush()
         return instance
 
     @classmethod
@@ -73,20 +66,20 @@ class Entry(Base):
             session = DBSession
         return session.query(cls).filter_by(id=id).one()
 
-    @classmethod
-    def update(cls, id, title=None, text=None, session=None):
-        if session is None:
-            session = DBSession
-        entry = session.query(cls).filter_by(id=id).one()
-        entry.title = title
-        entry.text = text
-        return entry
+    @property
+    def markdown(self):
+        return markdown.markdown(self.text, extensions=['codehilite',
+                                 'fenced_code'])
+
+    @property
+    def created_(self):
+        return self.date.strftime('%b. %d, %Y')
 
 
 @view_config(route_name='home', renderer='templates/index.jinja2')
 def index_view(request):
     entries = Entry.all()
-    return {'entries': entries, 'add_markdown': add_markdown}
+    return {'entries': entries}
 
 
 @view_config(route_name='detail', renderer='templates/detail.jinja2')
@@ -96,9 +89,10 @@ def detail_view(request):
             entry = Entry.search(post_id)
     except NoResultFound:
         return HTTPNotFound('No post found.')
-    return {'entry': entry, 'add_markdown': add_markdown}
+    return {'entry': entry}
 
 
+@view_config(route_name='edit', xhr=True, renderer='json')
 @view_config(route_name='edit', renderer='templates/edit.jinja2')
 def edit_entry(request):
     if request.authenticated_userid:
@@ -106,13 +100,15 @@ def edit_entry(request):
         try:
             entry = Entry.search(post_id)
         except NoResultFound:
-            return HTTPNotFound('No post found.')
+            return HTTPNotFound('There is no post with this id.')
         if request.method == 'POST':
-            id = request.matchdict['id']
-            title = request.params.get('title')
-            text = request.params.get('text')
-            Entry.update(id=id, title=title, text=text)
-            return HTTPFound(request.route_url('home'))
+            entry.title = request.params.get('title')
+            entry.text = request.params.get('text')
+            if 'HTTP_X_REQUESTED_WITH' not in request.environ:
+                return HTTPFound(request.route_url('detail', id=post_id))
+            else:
+                entry_dict = {'title': entry.title}
+                return entry_dict
         else:
             return {'entry': entry}
     else:
@@ -125,14 +121,23 @@ def add_view(request):
     return {'entries': entries}
 
 
+@view_config(route_name='add', xhr=True, renderer='json')
 @view_config(route_name='add', renderer='templates/create.jinja2')
 def add_entry(request):
     if request.authenticated_userid:
         if request.method == 'POST':
             title = request.params.get('title')
             text = request.params.get('text')
-            Entry.write(title=title, text=text)
-            return HTTPFound(request.route_url('home'))
+            new_entry = Entry.write(title=title, text=text)
+            if 'HTTP_X_REQUESTED_WITH' not in request.environ:
+                return HTTPFound(request.route_url('home'))
+            else:
+                entry = {'id': new_entry.id,
+                         'title': new_entry.title,
+                         'markdown': new_entry.markdown,
+                         'created_': new_entry.created_
+                         }
+                return entry
         else:
             return {}
     else:

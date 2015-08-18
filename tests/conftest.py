@@ -33,3 +33,9 @@ def app(db_session):
     from webtest import TestApp
     app = main()
     return TestApp(app)
+
+
+@pytest.fixture()
+def homepage(app):
+    response = app.get('/')
+    return response
